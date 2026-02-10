@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1E2233">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="レンジ計算機">
+    
+    <title>レンジ計算機</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- アイコン -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(180deg, #1E2233 0%, #2C3144 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            padding: 20px 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #B4B8C5;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 28px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            margin-bottom: 24px;
+        }
+
+        .input-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            font-size: 13px;
+            color: #B4B8C5;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .watt-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .watt-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #B4B8C5;
+            font-size: 14px;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .watt-option:active {
+            transform: scale(0.95);
+        }
+
+        .watt-option.active {
+            background: rgba(201, 167, 255, 0.15);
+            border-color: #C9A7FF;
+            color: #C9A7FF;
+        }
+
+        .time-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 18px;
+            color: #FFFFFF;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #FFB86C;
+        }
+
+        .input-field::placeholder {
+            color: #5C6066;
+        }
+
+        /* 数字入力のスピナーを非表示 */
+        .input-field::-webkit-outer-spin-button,
+        .input-field::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-field[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .unit {
+            font-size: 16px;
+            color: #8BE9C8;
+            font-weight: 600;
+            min-width: 24px;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.1) 20%, 
+                rgba(255, 255, 255, 0.1) 80%, 
+                transparent
+            );
+            margin: 24px 0;
+        }
+
+        .result-section {
+            text-align: center;
+            padding: 24px 28px;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: #B4B8C5;
+            margin-bottom: 16px;
+        }
+
+        .result-value {
+            font-size: 64px;
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1;
+            margin-bottom: 8px;
+            text-shadow: 0 0 30px rgba(139, 233, 200, 0.3);
+        }
+
+        .result-unit {
+            font-size: 24px;
+            color: #8BE9C8;
+            font-weight: 600;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #FFB86C 0%, #FF9F5A 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1E2233;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 184, 108, 0.3);
+            user-select: none;
+        }
+
+        .button:active {
+            transform: translateY(1px);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #7B7E8A;
+            text-align: center;
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            color: #FF6B6B;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 初期状態では結果を非表示 */
+        .result-section.hidden {
+            display: none;
+        }
+
+        /* ロード中の表示 */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="app-title">⚡ レンジ計算機</div>
+            <div class="app-subtitle">ワット数変換ツール</div>
+        </div>
+
+        <div class="card">
+            <div class="input-section">
+                <label class="label">もとのワット数</label>
+                <div class="watt-selector" id="sourceWattSelector">
+                    <div class="watt-option active" data-watt="500">500W</div>
+                    <div class="watt-option" data-watt="600">600W</div>
+                    <div class="watt-option" data-watt="800">800W</div>
+                    <div class="watt-option" data-watt="1500">1500W</div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <label class="label">時間</label>
+                <div class="time-input-group">
+                    <div class="input-wrapper">
+                        <input type="number" class="input-field" id="inputMinutes" value="3" placeholder="0" min="0" step="1" inputmode="numeric">
+                        <span class="unit">分</span>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" class="input-field" id="inputSeconds" value="30" placeholder="0" min="0" max="59" step="1" inputmode="numeric">
+                        <span class="unit">秒</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="input-section">
+                <label class="label">変換先のワット数</label>
+                <div class="watt-selector" id="targetWattSelector">
+                    <div class="watt-option" data-watt="500">500W</div>
+                    <div class="watt-option" data-watt="600">600W</div>
+                    <div class="watt-option active" data-watt="800">800W</div>
+                    <div class="watt-option" data-watt="1500">1500W</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="card result-section hidden" id="resultSection">
+            <div class="result-label">変換後の時間</div>
+            <div class="result-value" id="resultTime">-:--</div>
+            <div class="result-unit" id="resultSeconds">- 秒</div>
+        </div>
+
+        <button class="button" id="calculateButton">計算する</button>
+
+        <div class="info-text">
+            計算式: (元W × 元時間) ÷ 新W<br>
+            実際の加熱時間は機種により異なります
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Service Workerの登録
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed:', err));
+        }
+    </script>
+</body>
+</html>
