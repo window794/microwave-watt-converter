@@ -1,7 +1,7 @@
 // Service Worker for レンジ計算機
 // オフラインでも動作するようにキャッシュを使用
 
-const CACHE_NAME = 'microwave-calc-v1';
+const CACHE_NAME = 'microwave-calc-v2';
 const urlsToCache = [
   './',
   './index.html',
